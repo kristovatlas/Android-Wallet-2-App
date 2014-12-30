@@ -1,13 +1,5 @@
 package piuk.blockchain.android.ui;
 
-/*Client ID: 	381130279932.apps.googleusercontent.com
-Redirect URIs: 	urn:ietf:wg:oauth:2.0:oob http://localhost
-Application type: 	Android
-Package name: 	com.ultimasquare.pinview
-Certificate fingerprint (SHA1): 	86:F2:4D:FD:34:98:BF:0C:47:94:34:D4:8C:68:A3:84:B7:D7:B2:0F
-Deep Linking: 	Disabled*/
-
-
 import java.lang.ref.WeakReference;
 import java.security.SecureRandom;
 import java.util.ArrayList;
@@ -49,7 +41,8 @@ public class PinEntryActivity extends AbstractWalletActivity {
 	public static final int BEGIN_CHECK_PIN = 4;
 	public static final int FINISHING_SETUP = 3;
 	public static final int VALIDATING_PIN = 5;
-	public static final int PBKDF2Iterations = 2000;
+//	public static final int PBKDF2Iterations = 2000;
+	public static final int PBKDF2Iterations = 5000;
 	private static List<WeakReference<PinEntryActivity>> fragmentRefs = new ArrayList<WeakReference<PinEntryActivity>>();
 
 	private EventListeners.EventListener eventListener = new EventListeners.EventListener() {

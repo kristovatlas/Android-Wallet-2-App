@@ -75,7 +75,8 @@ public class PinCreateActivity extends Activity {
     private TextWatcher twPin3_2 = null;
     private TextWatcher twPin4_2 = null;
 
-    public static final int PBKDF2Iterations = 2000;
+//    public static final int PBKDF2Iterations = 2000;
+    public static final int PBKDF2Iterations = 5000;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -534,7 +535,6 @@ public class PinCreateActivity extends Activity {
         	  }
 
           });
-
 
 	}
 

@@ -662,7 +662,7 @@ public class MyWallet {
 
 			String payload = (String) obj.get("payload");
 			int pbkdf2_iterations = Integer.valueOf(obj.get("pbkdf2_iterations").toString());
-			double version = Integer.valueOf(obj.get("version").toString());
+			double version = Double.valueOf(obj.get("version").toString());
 
 			hdWallet = (JSONArray)obj.get("hd_wallets");
 			//            System.out.println("hd_wallets:" + hdWallet.toString());
@@ -681,6 +681,11 @@ public class MyWallet {
 	}
 
 	private String encryptWallet(String text, String password) throws Exception {
+		
+		if(rootContainer == null) {
+			rootContainer = new JSONObject();
+		}
+		
 		rootContainer.put("payload", encrypt(text, password, this.getMainPasswordPbkdf2Iterations()));
 		rootContainer.put("version", 2.0);
 		rootContainer.put("pbkdf2_iterations", this.getMainPasswordPbkdf2Iterations());

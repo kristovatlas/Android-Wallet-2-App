@@ -854,8 +854,6 @@ public class WalletApplication extends Application {
 	public synchronized void checkIfWalletHasUpdated(final String password, final String guid, final String sharedKey, final boolean fetchTransactions, final SuccessCallback callbackFinal) {
 
 		final boolean fetchTx = true;
-		
-//		System.out.println("checkIfWalletHasUpdated: password");
 
 		final WalletApplication application = this;
 

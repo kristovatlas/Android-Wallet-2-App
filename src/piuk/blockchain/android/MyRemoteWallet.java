@@ -639,7 +639,6 @@ public class MyRemoteWallet extends MyWallet {
 	        String encodedBytes = Base58.encode(randomBytes);
 	        //TODO: Casascius Series 1 22-character variant, remember to notify Ben about updating to 30-character variant
 	        String minikey = 'S' + encodedBytes.substring(0,21);
-	        //minikey = "S8osZG4hyGCsMxfxuTUfrF"; // canned data
 
 	        try {
 		        //Append ? & hash it again

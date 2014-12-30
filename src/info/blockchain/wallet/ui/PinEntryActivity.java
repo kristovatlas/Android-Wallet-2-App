@@ -91,7 +91,7 @@ public class PinEntryActivity extends FragmentActivity {
 	private String userInput = null;
 
 	private static final String WebROOT = "https://" + Constants.BLOCKCHAIN_DOMAIN + "/pin-store";
-	public static final int PBKDF2Iterations = 2000;
+	public static final int PBKDF2Iterations = 5000;
 	
 	public String strUri = null;
 
@@ -878,6 +878,7 @@ public class PinEntryActivity extends FragmentActivity {
 
 								builder.setTitle(piuk.blockchain.android.R.string.pin_server_error);
 
+								/*
 								builder.setPositiveButton(piuk.blockchain.android.R.string.try_again, new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog, int id) {
 
@@ -889,7 +890,9 @@ public class PinEntryActivity extends FragmentActivity {
 
 									}
 								});
-								builder.setNegativeButton(piuk.blockchain.android.R.string.pin_server_error_enter_password_manually, new DialogInterface.OnClickListener() {
+								*/
+//								builder.setNegativeButton(piuk.blockchain.android.R.string.pin_server_error_enter_password_manually, new DialogInterface.OnClickListener() {
+								builder.setPositiveButton(piuk.blockchain.android.R.string.pin_server_error_enter_password_manually, new DialogInterface.OnClickListener() {
 									public void onClick(DialogInterface dialog, int id) {
 										dialog.dismiss();
 
@@ -957,7 +960,7 @@ public class PinEntryActivity extends FragmentActivity {
 
 				connection.setInstanceFollowRedirects(false);
 
-				System.out.println("Response Code " + connection.getResponseCode() );
+//				System.out.println("Response Code " + connection.getResponseCode() );
 
 				//connection.getRequestProperties().get("Content-Type").equals("application/json")
 				if (connection.getResponseCode() == 200)

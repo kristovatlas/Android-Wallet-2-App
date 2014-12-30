@@ -227,7 +227,7 @@ public class SecureWallet extends Activity {
 
 			String pw1 = data.getAction();
 			
-			if(pw1.length() < 11 || pw1.length() > 255 || pw1.length() < 11 || pw1.length() > 255) {
+			if(pw1 == null || pw1.length() < 10 || pw1.length() > 255) {
 				Toast.makeText(SecureWallet.this, R.string.new_account_password_length_error, Toast.LENGTH_LONG).show();
 		    	tgPassword.setChecked(false);
 				return;
@@ -246,7 +246,7 @@ public class SecureWallet extends Activity {
 
 			String pw2 = data.getAction();
 			
-			if(strPw1 == null || strPw1.length() < 11 || !strPw1.equals(pw2)) {
+			if(pw2 == null || pw2.length() < 10 || pw2.length() > 255 || !strPw1.equals(pw2)) {
 				Toast.makeText(SecureWallet.this, R.string.new_account_password_mismatch_error, Toast.LENGTH_LONG).show();
 		    	tgPassword.setChecked(false);
 			}
