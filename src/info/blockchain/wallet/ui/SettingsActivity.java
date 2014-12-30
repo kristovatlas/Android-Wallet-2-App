@@ -4,16 +4,20 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.Writer;
 import java.util.Date;
+import java.util.regex.Pattern;
 
 import piuk.blockchain.android.Constants;
 import piuk.blockchain.android.R;
 import piuk.blockchain.android.SuccessCallback;
 import piuk.blockchain.android.WalletApplication;
+import piuk.blockchain.android.MyRemoteWallet;
 import piuk.blockchain.android.util.Iso8601Format;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
@@ -25,14 +29,15 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-//import android.util.Log;
 import android.widget.Toast;
+//import android.util.Log;
 
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener	{
 
 	private static final int DIALOG_EXPORT_KEYS = 1;
 
@@ -45,6 +50,8 @@ public class SettingsActivity extends PreferenceActivity {
             setTitle(R.string.app_name);
         	addPreferencesFromResource(R.xml.settings);
 
+        	PreferenceManager.getDefaultSharedPreferences(this).registerOnSharedPreferenceChangeListener(this);
+        	 
         	SharedPreferences sp = getPreferenceScreen().getSharedPreferences();
         	application = (WalletApplication)getApplication();
         	final String guid = application.getRemoteWallet().getGUID();
@@ -353,7 +360,7 @@ public class SettingsActivity extends PreferenceActivity {
 		            public void onClick(View view) {
 		    			String pw1 = passswordEditText.getText().toString().trim();
 						String pw2 = passswordConfirmEditText.getText().toString().trim();
-			   			if(pw1.length() < 11 || pw1.length() > 255) {
+			   			if(pw1.length() < 10 || pw1.length() > 255) {
 			   				Toast.makeText(SettingsActivity.this, R.string.new_account_password_length_error, Toast.LENGTH_LONG).show();
 			   				return;
 			   			}
@@ -514,5 +521,143 @@ public class SettingsActivity extends PreferenceActivity {
     	}
 
     }
+    
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+
+    	Pattern emailPattern = Patterns.EMAIL_ADDRESS;
+    	Pattern phonePattern = Pattern.compile("(\\+[1-9]{1}[0-9]{1,2}+|00[1-9]{1}[0-9]{1,2}+)[\\(\\)\\.\\-\\s\\d]{6,16}");
+
+    	SharedPreferences sp = getPreferenceScreen().getSharedPreferences();
+
+    	if(key.equals("backups") && !sp.getString("email", "").equals("")) {
+    		sendNotifsThread(sp.getBoolean("backups", false), sp.getBoolean("notifs", false));
+    	}
+    	else {
+    		sendNotifsThread(sp.getBoolean("backups", false), sp.getBoolean("notifs", false));
+    	}
+    	if(key.equals("email") && sp.getBoolean("backups", false) == true) {
+    		String email = sp.getString("email", "");
+    		if(emailPattern.matcher(email).matches()) {
+        		sendEmailThread(email);
+    		}
+    		else {
+   				Toast.makeText(SettingsActivity.this, R.string.new_account_password_invalid_email, Toast.LENGTH_LONG).show();
+    		}
+    	}
+
+    	if(key.equals("notifs") && !sp.getString("mobile", "").equals("")) {
+    		sendNotifsThread(sp.getBoolean("backups", false), sp.getBoolean("notifs", false));
+    	}
+    	else {
+    		sendNotifsThread(sp.getBoolean("backups", false), sp.getBoolean("notifs", false));
+    	}
+    	if(key.equals("mobile") && sp.getBoolean("notifs", false) == true) {
+    		String mobile = sp.getString("mobile", "");
+    		if(phonePattern.matcher(mobile).matches()) {
+        		sendSMSThread(mobile);
+    		}
+    		else {
+   				Toast.makeText(SettingsActivity.this, R.string.invalid_mobile, Toast.LENGTH_LONG).show();
+    		}
+    	}
+
+    }
+    
+    private void sendEmailThread(final String email) {
+
+    	final MyRemoteWallet remoteWallet = WalletUtil.getInstance(SettingsActivity.this).getRemoteWallet();
+
+		final Handler handler = new Handler();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Looper.prepare();
+				
+				String response = null;
+				try {
+					response = remoteWallet.updateEmail(email);
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						;
+					}
+				});
+				
+				Looper.loop();
+
+			}
+		}).start();
+	}
+
+    private void sendSMSThread(final String smsNumber) {
+
+    	final MyRemoteWallet remoteWallet = WalletUtil.getInstance(SettingsActivity.this).getRemoteWallet();
+
+		final Handler handler = new Handler();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Looper.prepare();
+				
+				String response = null;
+				try {
+					response = remoteWallet.updateSMS(smsNumber);
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						;
+					}
+				});
+				
+				Looper.loop();
+
+			}
+		}).start();
+	}
+
+    private void sendNotifsThread(final boolean email, final boolean sms) {
+
+    	final MyRemoteWallet remoteWallet = WalletUtil.getInstance(SettingsActivity.this).getRemoteWallet();
+
+		final Handler handler = new Handler();
+
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				Looper.prepare();
+				
+				String response = null;
+				try {
+					response = remoteWallet.updateNotificationsType(email, sms);
+				}
+				catch(Exception e) {
+					e.printStackTrace();
+				}
+
+				handler.post(new Runnable() {
+					@Override
+					public void run() {
+						;
+					}
+				});
+				
+				Looper.loop();
+
+			}
+		}).start();
+	}
 
 }
