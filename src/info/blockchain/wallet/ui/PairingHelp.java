@@ -97,6 +97,7 @@ public class PairingHelp extends Activity {
                 return false;
             }
         });
+		layoutManual.setVisibility(View.INVISIBLE);
 
 		tvBack = (TextView)findViewById(R.id.back);
 		tvBack = (TextView)findViewById(R.id.back);
@@ -214,7 +215,7 @@ public class PairingHelp extends Activity {
 
 							edit.putString("guid", guid);
 							edit.putString("sharedKey", sharedKey);
-
+							
 							edit.commit();
 
 							handler.post(new Runnable() {
