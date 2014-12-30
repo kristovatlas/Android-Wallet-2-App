@@ -41,6 +41,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnTouchListener;
 import android.view.View.OnCreateContextMenuListener;
+import android.view.inputmethod.InputMethodManager;
 import android.view.MenuInflater;
 import android.view.ContextMenu.ContextMenuInfo;
 import android.widget.AdapterView;
@@ -61,6 +62,7 @@ import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager; 
 import android.support.v4.app.Fragment;
 //import android.util.Log;
+import android.text.InputType;
 
 public class AddressBookActivity extends Activity  {
 
@@ -604,9 +606,15 @@ public class AddressBookActivity extends Activity  {
 				e.printStackTrace();
 			}
 		} else if(resultCode == Activity.RESULT_OK && requestCode == SCAN_CONTACTS_ADDRESS) {
+
 			String scanData = data.getStringExtra(ZBarConstants.SCAN_RESULT);
-			if (addressManager.canAddAddressBookEntry(scanData, "")) {
-				addressManager.handleAddAddressBookEntry(scanData, "", new SuccessCallback() {
+            String btc_address = doScanInput(scanData);
+
+            if (btc_address == null) {
+	    		Toast.makeText(AddressBookActivity.this, R.string.invalid_bitcoin_address, Toast.LENGTH_LONG).show();
+			}
+			else if (addressManager.canAddAddressBookEntry(btc_address, "")) {
+				addressManager.handleAddAddressBookEntry(btc_address, "", new SuccessCallback() {
 
 					@Override
 					public void onSuccess() {
@@ -869,6 +877,18 @@ public class AddressBookActivity extends Activity  {
 				Toast.makeText(AddressBookActivity.this, reason, Toast.LENGTH_LONG).show();
 			}
 		});
+    }
+    
+    private String doScanInput(String address)	{
+        if(BitcoinAddressCheck.isValidAddress(address)) {
+        	return address;
+        }
+        else if(BitcoinAddressCheck.isUri(address)) {
+             return BitcoinAddressCheck.getAddress(address);
+        }
+        else {
+        	return null;
+        }
     }
 
 }

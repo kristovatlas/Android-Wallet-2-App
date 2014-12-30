@@ -464,8 +464,8 @@
     <string name="options_id2">Your Blockchain identifier</string>
     <string name="options_email">E-mail address (optional)</string>
     <string name="options_email2">E-mail address for backups</string>
-    <string name="options_email_backups">E-mail backups</string>
-    <string name="options_email_backups2">Receive wallet backups by e-mail</string>
+    <string name="options_email_backups">E-mail notifications</string>
+    <string name="options_email_backups2">Receive notifications by e-mail</string>
     <string name="options_cell">Mobile phone number (optional)</string>
     <string name="options_cell2">Mobile phone number for 2FA and SMS notifications</string>
     <string name="options_sms">SMS notifications</string>
@@ -599,4 +599,6 @@
         <item>Suggest a merchant</item>
     </string-array>
 
+    <string name="invalid_mobile">Invalid Mobile number</string>
+    
 </resources>
