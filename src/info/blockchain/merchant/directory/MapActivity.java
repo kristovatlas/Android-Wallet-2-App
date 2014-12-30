@@ -584,7 +584,7 @@ public class MapActivity extends Activity implements LocationListener	{
 
 				try {
 					if(fetch) {
-						final String url = "http://192.64.115.86/cgi-bin/btcd.pl?ULAT=" + currLocation.getLatitude() + "&ULON=" + currLocation.getLongitude() + "&D=40000&K=1";
+						final String url = "https://merchant-directory.blockchain.info/cgi-bin/btcd.pl?ULAT=" + currLocation.getLatitude() + "&ULON=" + currLocation.getLongitude() + "&D=40000&K=1";
 //	         			Log.d("BlockchainMerchantDirectory", url);
 	         			strJSONData = WalletUtils.getURL(url);
 //	         			Log.d("BlockchainMerchantDirectory", strJSONData);

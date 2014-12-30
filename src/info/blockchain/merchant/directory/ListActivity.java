@@ -109,7 +109,7 @@ public class ListActivity extends Activity {
 
         layout_icons.addView(mapview_icon);
 
-        actionBar.setDisplayOptions(actionBar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE);
+//        actionBar.setDisplayOptions(actionBar.getDisplayOptions() ^ ActionBar.DISPLAY_SHOW_TITLE);
         actionBar.setLogo(R.drawable.masthead);
         actionBar.setHomeButtonEnabled(false);
         actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_STANDARD);

@@ -161,7 +161,7 @@ public class SuggestMerchant extends Activity	{
 
                     	String res = null;
                     	try {
-                        	res = piuk.blockchain.android.util.WalletUtils.postURLWithParams("http://192.64.115.86/cgi-bin/btcp.pl", params);
+                        	res = piuk.blockchain.android.util.WalletUtils.postURLWithParams("s://merchant-directory.blockchain.info/cgi-bin/btcp.pl", params);
                     	}
                     	catch(Exception e) {
         					Toast.makeText(SuggestMerchant.this, e.getMessage(), Toast.LENGTH_SHORT).show();
