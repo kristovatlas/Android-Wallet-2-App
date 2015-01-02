@@ -47,6 +47,7 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 
 import org.apache.commons.io.IOUtils;
 import org.json.simple.JSONObject;
@@ -252,7 +253,6 @@ public class PinEntryActivity extends FragmentActivity {
 												final String key = new String(Hex.encode(bytes), "UTF-8");
 												random.nextBytes(bytes);
 												final String value = new String(Hex.encode(bytes), "UTF-8");
-												//												final JSONObject response = piuk.blockchain.android.ui.PinEntryActivity.apiStoreKey(key, value, userInput);
 												final JSONObject response = apiStoreKey(key, value, userInput);
 												if (response.get("success") != null) {
 
@@ -783,7 +783,8 @@ public class PinEntryActivity extends FragmentActivity {
 						application.setTemporyPIN(PIN);
 						application.didEncounterFatalPINServerError = false;
 
-						String password = MyWallet.decrypt(encrypted_password, decryptionKey, piuk.blockchain.android.ui.PinEntryActivity.PBKDF2Iterations);
+//						String password = MyWallet.decrypt(encrypted_password, decryptionKey, piuk.blockchain.android.ui.PinEntryActivity.PBKDF2Iterations);
+						String password = decrypt(encrypted_password, decryptionKey, PIN);
 
 						application.checkIfWalletHasUpdatedAndFetchTransactions(password, new SuccessCallback() {
 							@Override
@@ -1046,6 +1047,70 @@ public class PinEntryActivity extends FragmentActivity {
 
 			}
 		});
+	}
+
+	public String decrypt(String encrypted_password, String decryptionKey, String PIN) {
+		String password = null;
+		try {
+			password = MyWallet.decrypt(encrypted_password, decryptionKey, 2000);
+			Log.i("PinEntryDecrypt", "2000");
+
+			final WalletApplication application = (WalletApplication)PinEntryActivity.this.getApplication();
+
+			//
+			// Save PIN
+			//
+			try {
+				byte[] bytes = new byte[16];
+				SecureRandom random = new SecureRandom();
+				random.nextBytes(bytes);
+				final String key = new String(Hex.encode(bytes), "UTF-8");
+				random.nextBytes(bytes);
+				final String value = new String(Hex.encode(bytes), "UTF-8");
+				final JSONObject response = apiStoreKey(key, value, PIN);
+				if (response.get("success") != null && password != null && password.length() >= 10) {
+
+					Editor edit = PreferenceManager.getDefaultSharedPreferences(PinEntryActivity.this).edit();
+					edit.putString("pin_kookup_key", key);
+					edit.putString("encrypted_password", MyWallet.encrypt(password, value, PBKDF2Iterations));
+					edit.commit();
+
+					Toast.makeText(PinEntryActivity.this, "PIN saved", Toast.LENGTH_SHORT).show();
+
+//					application.getRemoteWallet().setTemporyPassword(password);
+//					TimeOutUtil.getInstance().updatePin();
+
+					/*
+					Intent intent = new Intent(PinEntryActivity.this, MainActivity.class);
+					intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+					startActivity(intent);
+					*/
+
+				}
+				else {
+
+					Toast.makeText(application, response.toString(), Toast.LENGTH_LONG).show();
+
+				}
+			} catch (Exception e) {
+				Toast.makeText(application, e.toString(), Toast.LENGTH_LONG).show();
+				e.printStackTrace();
+			}
+			//
+			//
+			//
+
+		} catch (Exception e1) {
+			try {
+				password = MyWallet.decrypt(encrypted_password, decryptionKey, PBKDF2Iterations);
+				Log.i("PinEntryDecrypt", "5000");
+
+			} catch (Exception e2) {
+				e2.printStackTrace();
+			}		
+		}
+
+		return password;
 	}
 
 }

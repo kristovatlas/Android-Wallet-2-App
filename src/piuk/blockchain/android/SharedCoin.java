@@ -77,10 +77,17 @@ public class SharedCoin {
     	Log.d("SharedCoin", "SharedCoin signInput tx.getInputs().size " + tx.getInputs().size());	
     	Log.d("SharedCoin", "SharedCoin signInput tx_input_index " + tx_input_index);	
     	Log.d("SharedCoin", "SharedCoin signInput base58PrivKey " + base58PrivKey);	
-        	
+
 		try {
-			ECKey key = new ECKey(Base58.decode(base58PrivKey), null);
-	    	Log.d("SharedCoin", "SharedCoin signInput key.toAddress " + key.toAddress(params).toString());	
+//			ECKey key = new ECKey(Base58.decode(base58PrivKey), null);
+//			ECKey key = new ECKey(Base58.decodeToBigInteger(base58PrivKey), null, true);
+//			ECKey key = MyWallet.decodeBase58PK(base58PrivKey);
+			
+	    	DumpedPrivateKey dpk = new DumpedPrivateKey(params, base58PrivKey);
+	    	ECKey key = dpk.getKey();
+
+	    	Log.d("SharedCoin", "SharedCoin signInput key.toAddress " + key.toAddress(params).toString());
+//	    	Log.d("SharedCoin", "SharedCoin signInput key.getPrivateKeyEncoded " + key.getPrivateKeyEncoded(params));
 			
 			TransactionSignature transactionSignature = tx.calculateSignature(tx_input_index, key, null, script.getProgram(), SigHash.ALL, false);
 			
@@ -117,7 +124,7 @@ public class SharedCoin {
 
 	private static SharedCoin instance = null;
 	
-	private Map<String, String> extra_private_keys; //{address : base58privkey}
+	private Map<String, ECKey> extra_private_keys; //{address : base58privkey}
 	private NetworkParameters params = null;
 	private long lastSignatureSubmitTime = 0;
 	private JSONObject info = null;
@@ -125,7 +132,7 @@ public class SharedCoin {
 	private WalletApplication application;
 	
 	public SharedCoin(WalletApplication application, MyRemoteWallet remoteWallet) {
-		this.extra_private_keys = new HashMap<String,String>();
+		this.extra_private_keys = new HashMap<String,ECKey>();
 		this.remoteWallet = remoteWallet;
 		this.application = application;
 		this.params = MyRemoteWallet.getParams();
@@ -193,6 +200,7 @@ public class SharedCoin {
 			ECKey key;
 			BigInteger num = new BigInteger(hash);
 			if (num.compareTo(BigInteger.ZERO) >= 0) {
+				/*
 				// condition is needed to match sharedCoin.js implementation
 		        if (hash[0] % 2 == 0) {	        	
 		        	key = new ECKey(num, null, false);
@@ -201,10 +209,13 @@ public class SharedCoin {
 		        	// if compressed parameter was false instead private key will match in js version, but address will not match
 		        	key = new ECKey(num, null, true);
 		        }
+		        */
+	        	key = new ECKey(num, null, false);
 			} else {
 				Log.d("SharedCoin", "SharedCoin generateAddressFromCustomSeed: appendZeroByte");
 				// Prepend a zero byte to make the BigInteger positive
-				byte[] appendZeroByte = ArrayUtils.addAll(new byte[1], hash);			
+				byte[] appendZeroByte = ArrayUtils.addAll(new byte[1], hash);
+				/*
 				// condition is needed to match sharedCoin.js implementation
 		        if (hash[0] % 2 == 0) {		        	
 		        	key = new ECKey(new BigInteger(appendZeroByte), null, false);				
@@ -213,16 +224,18 @@ public class SharedCoin {
 		        	// if compressed parameter was false instead private key will match in js version, but address will not match
 		        	key = new ECKey(new BigInteger(appendZeroByte), null, true);				
 		        }
+		        */
+	        	key = new ECKey(new BigInteger(appendZeroByte), null, false);				
 			}
 									
 			String address = key.toAddress(this.params).toString();
-			final DumpedPrivateKey dumpedPrivateKey = key.getPrivateKeyEncoded(params);
-			String privateKey = Base58.encode(dumpedPrivateKey.bytes);
+//			final DumpedPrivateKey dumpedPrivateKey = key.getPrivateKeyEncoded(params);
+//			String privateKey = Base58.encode(dumpedPrivateKey.bytes);
 
-			Log.d("SharedCoin", "SharedCoin generateAddressFromCustomSeed: privateKey " + privateKey);
+//			Log.d("SharedCoin", "SharedCoin generateAddressFromCustomSeed: privateKey " + privateKey);
 			Log.d("SharedCoin", "SharedCoin generateAddressFromCustomSeed: address " + address);
 
-			this.extra_private_keys.put(address, privateKey);
+			this.extra_private_keys.put(address, key);
 			return address;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -247,29 +260,21 @@ public class SharedCoin {
 					Log.d("SharedCoin", "SharedCoin recover address: " + address + " balance: " + balance);
                     if (balance > 0) {
 						Log.d("SharedCoin", "SharedCoin recover extra_private_keys.get(address): " + extra_private_keys.get(address));
-						try {
-							byte[] privateKeyBytes = Base58.decode(extra_private_keys.get(address));
-					        ECKey ecKey = new ECKey(privateKeyBytes, null);
-							Log.d("SharedCoin", "SharedCoin recover ecKey toAddress: " + ecKey.toAddress(SharedCoin.this.params).toString());
+						ECKey ecKey = extra_private_keys.get(address);
 
-							application.addKeyToWallet(ecKey, address, null, 0, new AddAddressCallback(){
-								@Override
-								public void onSavedAddress(
-										String address) {
-	    							Log.d("SharedCoin", "SharedCoin Imported: " + address);
-								}
+						Log.d("SharedCoin", "SharedCoin recover ecKey toAddress: " + ecKey.toAddress(SharedCoin.this.params).toString());
 
-								@Override
-								public void onError(String reason) {
-	    							Log.d("SharedCoin", "SharedCoin Error importing: " + address + " " + reason);
-								}
-							});
-							
+						application.addKeyToWallet(ecKey, address, null, 0, new AddAddressCallback(){
+							@Override
+							public void onSavedAddress(String address) {
+    							Log.d("SharedCoin", "SharedCoin Imported: " + address);
+							}
 
-						} catch (AddressFormatException e) {
-							Log.d("SharedCoin", "SharedCoin recover AddressFormatException: " + e.getLocalizedMessage());
-							e.printStackTrace();
-						}
+							@Override
+							public void onError(String reason) {
+    							Log.d("SharedCoin", "SharedCoin Error importing: " + address + " " + reason);
+							}
+						});
 
                     	total_balance += balance;
                     }
@@ -310,10 +315,11 @@ public class SharedCoin {
 		++key;
 		final int keyTmp = key;
 		
-		//for (int i = 0; i < 1; ++i) { //debug
-        for (int i = 0; i < 100; ++i) {
+		//for (int i = 0; i < 1; i++) { //debug
+        for (int i = 0; i < 100; i++) {
             String address = generateAddressFromCustomSeed(seed, i);
             addresses.add(address);
+			Log.d("SharedCoin", "SharedCoin addresses add " + addresses.toString());
         }	
         
         final List<String> addressesTmp = addresses;
@@ -373,6 +379,7 @@ public class SharedCoin {
 	
 	public void sendSharedCoin(final int repetitions, final List<String> fromAddresses, final BigInteger amount,
 			final String toAddress, final ObjectSuccessCallback objectSuccessCallback) throws Exception {
+
         if (repetitions <= 0) {
 			throw new Exception("invalid number of repetitions");
         }
@@ -443,6 +450,7 @@ public class SharedCoin {
 			    Log.d("SharedCoin", "SharedCoin constructPlan error " + error);
 			}
         });
+        
 	}
 	
 	private void constructPlan(int repetitions, List<String> fromAddresses, List<HashMap<String,String>> to_addresses, final ObjectSuccessCallback objectSuccessCallback) {
@@ -465,7 +473,7 @@ public class SharedCoin {
 	        	//to_values_before_fees.add(to_address.get("amount"));
 	            Log.d("SharedCoin", "SharedCoin to_values_before_fees: " + to_values_before_fees);
 	            Log.d("SharedCoin", "SharedCoin constructPlan: 2");
-	            for (int ii = repetitions-1; ii >= 0; --ii) {
+	            for (int ii = 0; ii < repetitions; ii++) {
 	            	BigInteger feeThisOutput = calculateFeeForValue(amt);
 	            	//BigInteger feeThisOutput = new BigInteger("777");
 
@@ -484,12 +492,9 @@ public class SharedCoin {
 	        Log.d("SharedCoin", "SharedCoin to_values_before_fees: " + Arrays.toString(to_values_before_fees.toArray()));
 	        Log.d("SharedCoin", "SharedCoin fee_each_repetition: " + Arrays.toString(fee_each_repetition));
 
-	        
 	        //ECKey change_key = new ECKey();
 	        final String change_address;
-	        
-	        
-	        
+
 	        Offer offer = new Offer(this);
 	        List<MyTransactionOutPoint> unspent;
 	        if (! SHARED_COIN_DEBUG) {
@@ -523,7 +528,6 @@ public class SharedCoin {
 			Pair<Transaction, Long> pair = this.remoteWallet.makeTransaction(false, unspent, to_addressesMap, feeSum, change_address);
 	        Log.d("SharedCoin", "SharedCoin makeTransaction: 2");
 			Transaction transaction = pair.first;
-			
 
 			/*
 			for (int i = 0; i < unspent.size(); i++) {
@@ -558,8 +562,7 @@ public class SharedCoin {
 	    		//String addr = script.getToAddress().toString();
 	    		
 	    		BigInteger value = transactionOutput.getValue();
-	    		
-	  
+
 	    		BitcoinScript toOutputScript = new BitcoinScript(transactionOutput.getScriptBytes());
 	    		//BitcoinScript toOutputScript = BitcoinScript.createSimpleOutBitoinScript(new BitcoinAddress(addr));
 	    		byte[] program = toOutputScript.getProgram();
@@ -596,8 +599,7 @@ public class SharedCoin {
 			e.printStackTrace();
 		}
 	}
-	
-	
+
 	//TODO call in same places as in js 
 	private void _error(Plan plan, String error, ObjectSuccessCallback objectSuccessCallback) {
 		if (plan.generated_addresses == null)
@@ -612,8 +614,7 @@ public class SharedCoin {
         
         objectSuccessCallback.onFail(error);
 	}
-	
-	
+
     private static int[] divideUniformlyRandomly(final int sum, final int n) {
     	int[] nums = new int[n];
         long upperbound = Math.round(sum * 1.0 / n);
@@ -673,11 +674,11 @@ public class SharedCoin {
 				JSONArray outpoints_to_offer_next_stage = (JSONArray) obj;
 		    	Log.d("SharedCoin", "SharedCoin determineOutputsToOfferNextStage onSuccess outpoints_to_offer_next_stage.size() " + outpoints_to_offer_next_stage.size());		
 
-				for (int i = 0; i < outpoints_to_offer_next_stage.size(); i ++) {					
+				for (int i = 0; i < outpoints_to_offer_next_stage.size(); i++) {					
 			    	Log.d("SharedCoin", "SharedCoin determineOutputsToOfferNextStage onSuccess i " + i);		
 
 					JSONObject outpoint_to_offer_next_stage = (JSONObject) outpoints_to_offer_next_stage.get(i);
-					outpoint_to_offer_next_stage.put("hash", tx);
+					outpoint_to_offer_next_stage.put("hash", tx_hash);
 				}
 		    	Log.d("SharedCoin", "SharedCoin determineOutputsToOfferNextStage onSuccess 2");		
 
@@ -692,7 +693,6 @@ public class SharedCoin {
 		});
 	}
 
-	
     /*
 	public boolean isEnabled() {
 		return true;
@@ -892,9 +892,7 @@ public class SharedCoin {
 			offerObject.put("offer_id", this.offer_id);
 			return offerObject;
 		}
-		
-		
-		
+
 		private boolean isOutpointOneWeOffered(TransactionInput input) {
 			try {
 				byte[] bytes = input.getOutpoint().getHash().getBytes();
@@ -1001,7 +999,7 @@ public class SharedCoin {
 					Log.d("SharedCoin", "SharedCoin determineOutputsToOfferNextStage i " + i);		
 
 		    		if (isOutputOneWeRequested(output)) {
-		    			if (isOutputChange(output)) {   			
+		    			if (!isOutputChange(output)) {   			
 							JSONObject dict = new JSONObject();
 							dict.put("hash", null);
 							dict.put("index", (long) i);
@@ -1054,7 +1052,7 @@ public class SharedCoin {
                 JSONArray signatureRequests = (JSONArray) proposal.get("signature_requests");
         		Log.d("SharedCoin", "SharedCoin checkProposal signatureRequests.size " + signatureRequests.size());		
 
-        		for (int i = 0; i < signatureRequests.size(); ++i) {
+        		for (int i = 0; i < signatureRequests.size(); i++) {
         			JSONObject signatureRequest = (JSONObject) signatureRequests.get(i);
         			BigInteger tx_index = SharedCoin.getBigIntegerFromLong(signatureRequest, "tx_input_index");
                     if (this.isOutpointOneWeOffered(tx.getInput(tx_index.intValue()))) {
@@ -1085,7 +1083,6 @@ public class SharedCoin {
 				String status = (String) obj.get("status");
             	Log.d("SharedCoin", "SharedCoin submit obj " + obj.toString());
 
-				
 		    	if (status != null && status.equals(STATUS_COMPLETE)) {
 		    		objectSuccessCallback.onComplete((String)obj.get("tx_hash"), (String)obj.get("tx"));
                 } else if (obj.get("offer_id") == null) {
@@ -1170,11 +1167,12 @@ public class SharedCoin {
 	    	Log.d("SharedCoin", "SharedCoin signInputs proposal " + proposal.toString());		
 
 	    	try {
-		        HashMap<String,String> tmp_cache = new HashMap<String,String>();
+	    		ECKey key = null;
+		        HashMap<String,ECKey> tmp_cache = new HashMap<String,ECKey>();
 				
 				JSONArray connected_scripts = new JSONArray();
 	            JSONArray signatureRequests = (JSONArray) proposal.get("signature_requests");
-	    		for (int i = 0; i < signatureRequests.size(); ++i) {
+	    		for (int i = 0; i < signatureRequests.size(); i++) {
 	    			JSONObject request = (JSONObject) signatureRequests.get(i);
 
 	    			String tmp = (String) request.get("connected_script");
@@ -1184,9 +1182,7 @@ public class SharedCoin {
 //	                	throw new Exception("signInputs() Connected script is null");	    			
 	    			
 	    			JSONObject connectedScriptStuff = new JSONObject();
-	    			
-	    			
-	    			
+
 	    			/*
 	    			connectedScriptStuff.put("connected_script", connected_script);
 	    	    	//*/
@@ -1194,8 +1190,6 @@ public class SharedCoin {
 	    			connectedScriptStuff.put("connected_script_hex", tmp);
 	    	    	//*/
 
-	    			
-	    			
         			long tx_index = SharedCoin.getLongFromLong(request, "tx_input_index");
 	    			long offer_outpoint_index = SharedCoin.getLongFromLong(request, "offer_outpoint_index");
 
@@ -1206,22 +1200,29 @@ public class SharedCoin {
         	    	Log.d("SharedCoin", "SharedCoin signInputs inputAddress " + inputAddress);		
 
 	    			if (tmp_cache.containsKey(inputAddress)) {
-	        	    	Log.d("SharedCoin", "SharedCoin signInputs extra_private_keys key " + tmp_cache.get(inputAddress));		
+	        	    	Log.d("SharedCoin", "SharedCoin signInputs extra_private_keys key " + tmp_cache.get(inputAddress).getPrivateKeyEncoded(params).toString());		
 
-	        	    	connectedScriptStuff.put("priv_to_use", tmp_cache.get(inputAddress));
+	        	    	connectedScriptStuff.put("priv_to_use", tmp_cache.get(inputAddress).getPrivateKeyEncoded(params).toString());
 	    			} else if (sharedCoin.extra_private_keys.containsKey(inputAddress)) {
-	        	    	Log.d("SharedCoin", "SharedCoin signInputs extra_private_keys key " + sharedCoin.extra_private_keys.get(inputAddress));		
+	        	    	Log.d("SharedCoin", "SharedCoin signInputs extra_private_keys key " + sharedCoin.extra_private_keys.get(inputAddress).getPrivateKeyEncoded(params).toString());		
 
-	    				connectedScriptStuff.put("priv_to_use", sharedCoin.extra_private_keys.get(inputAddress));
+	    				connectedScriptStuff.put("priv_to_use", sharedCoin.extra_private_keys.get(inputAddress).getPrivateKeyEncoded(params).toString());
 	    			} else if (Offer.this.sharedCoin.remoteWallet.isMine(inputAddress) && ! Offer.this.sharedCoin.remoteWallet.isWatchOnly(inputAddress)) {
-	        	    	Log.d("SharedCoin", "SharedCoin signInputs remoteWallet.getPrivateKey key " + Offer.this.sharedCoin.remoteWallet.getPrivateKey(inputAddress));		
-	    				connectedScriptStuff.put("priv_to_use", Offer.this.sharedCoin.remoteWallet.getPrivateKey(inputAddress));
+//	        	    	Log.d("SharedCoin", "SharedCoin signInputs " + " key " + Offer.this.sharedCoin.remoteWallet.getPrivateKey(inputAddress));
+
+//	        	    	connectedScriptStuff.put("priv_to_use", Offer.this.sharedCoin.remoteWallet.getPrivateKey(inputAddress));
+	        	    	
+	    				key = Offer.this.sharedCoin.remoteWallet.getECKey(inputAddress);
+	        	    	Log.d("SharedCoin", "SharedCoin signInputs ECKey.getPrivateKeyEncoded " + key.getPrivateKeyEncoded(params).toString());		
+	        	    	connectedScriptStuff.put("priv_to_use", key.getPrivateKeyEncoded(params).toString());
+
 	    			}
 	    			
 	    			if (! connectedScriptStuff.containsKey("priv_to_use")) {
 	                	throw new Exception("Private key not found");
 	    			} else { 
-	    				tmp_cache.put(inputAddress, (String) connectedScriptStuff.get("priv_to_use"));
+//	    				tmp_cache.put(inputAddress, (String) connectedScriptStuff.get("priv_to_use"));
+	    				tmp_cache.put(inputAddress, key);
 	    			}
  	    		
 	    	    	Log.d("SharedCoin", "SharedCoin signInputs connectedScriptStuff " + connectedScriptStuff.toString());		
@@ -1259,8 +1260,6 @@ public class SharedCoin {
 
 	    	    	JSONObject connectedScriptStuff = (JSONObject) connected_scripts.get(index);
 
-	    	    	
-
 	    	    	/*
 	    	    	BitcoinScript connected_script = (BitcoinScript) connectedScriptStuff.get("connected_script");
 	            	if (connected_script == null) throw new Exception("Null connected script");
@@ -1269,8 +1268,7 @@ public class SharedCoin {
 	    	    	String connected_script_hex = (String) connectedScriptStuff.get("connected_script_hex");
 	    			BitcoinScript connected_script = new BitcoinScript(Hex.decode(connected_script_hex.getBytes()));
 	    	    	//*/
-	    			
-	    			
+
         			BigInteger tx_input_index = SharedCoin.getBigIntegerFromLong(connectedScriptStuff, "tx_input_index");
 	                String base58PrivKey = (String) connectedScriptStuff.get("priv_to_use");
         	    	
@@ -1336,9 +1334,7 @@ public class SharedCoin {
 	    	});	
 		}
 	}
-	
 
-	
 	public class Plan {
 		public int n_stages = 0;
 		public int c_stage = 0;
@@ -1366,8 +1362,7 @@ public class SharedCoin {
                 List<String> additional_seeds = remoteWallet.getAdditionalSeeds();                
                 for (String additional_seed : additional_seeds) Log.d("SharedCoin", "SharedCoin Saved Wallet additional_seed " + additional_seed);		
                 Log.d("SharedCoin", "SharedCoin enerateAddressFromSeed additional_seeds.size()b4 " + additional_seeds.size());	
-                
-			    
+
                 //wallet sync is called b4 execStage 0
 			    remoteWallet.addAdditionalSeeds(new String(SharedCoin.SEED_PREFIX + this.address_seed));
 	        }
@@ -1407,8 +1402,7 @@ public class SharedCoin {
 			return address;
 			//*/
 		}	
-		
-		
+
 		public void constructRepetitions(Offer initial_offer, BigInteger[] fee_each_repetition, ObjectSuccessCallback objectSuccessCallback) {
 			try {
 	            
@@ -1424,7 +1418,7 @@ public class SharedCoin {
 	            
 		        BigInteger totalValueLeftToConsume = totalValueInput;
 		        BigInteger totalChangeValueLeftToConsume = BigInteger.ZERO;
-		        for (int ii = 0; ii < this.n_stages-1; ++ii) {
+		        for (int ii = 0; ii < this.n_stages; ii++) {
 		        	Offer offer = new Offer(this.sharedCoin);
 
 		        	//Copy the inputs from the last offer
@@ -1456,7 +1450,7 @@ public class SharedCoin {
 				    double rand = random.nextDouble();
 
 				    int minSplits;
-		            if (totalValueLeftToConsume.intValue() >= 0.2*SATOSHI) {
+		            if (totalValueLeftToConsume.intValue() >= 0.2 * SATOSHI) {
 		            	minSplits = 2;
 		                if (rand >= 0.5) {
 		                    minSplits = 3;
@@ -1492,7 +1486,7 @@ public class SharedCoin {
 
 		            BigInteger totalValue = totalValueLeftToConsume.add(totalChangeValueLeftToConsume);
 		            boolean outputsAdded = false;
-		            for (int _i = 0; _i < 1000; ++_i) {
+		            for (int _i = 0; _i < 1000; _i++) {
 		                for (int j = 0; j < splitValues.length; j++) {
 		                	int sK = j;
 			    	        //Log.d("SharedCoin", "SharedCoin constructRepetitions sK " + sK);		
@@ -1549,7 +1543,7 @@ public class SharedCoin {
 		    	    	            Log.d("SharedCoin", "SharedCoin remainderDivides " + Arrays.asList(remainderDivides));
 
 		                            boolean withinRange = true;
-		                            for (int iii  = 0; iii < quotient; ++iii) {
+		                            for (int iii  = 0; iii < quotient; iii++) {
 
 		                            	BigInteger value = splitValue;
 		                            	if (remainderDivides != null && remainderDivides.length > iii) {
@@ -1569,7 +1563,7 @@ public class SharedCoin {
 		                                continue;
 		                            }
 
-		                            for (int iii = 0; iii < quotient; ++iii) {
+		                            for (int iii = 0; iii < quotient; iii++) {
 		                                String new_address = this.generateAddressFromSeed();
 
 		                                BigInteger value = splitValue;
@@ -1651,8 +1645,7 @@ public class SharedCoin {
 	        		offer2.addRequestOutputs("10000000", "76a91472ef9da834b88115510dd35e808f9e0d0c67e9c488ac");
 	        		this.offers.add(offer2);
 	        	}
-	        	
-	        	
+
 	        	//*
 	        	//debug code
 		        Log.d("SharedCoin", "SharedCoin initial_offer " + initial_offer.getOffer().toString());	
@@ -1661,7 +1654,7 @@ public class SharedCoin {
 		        	JSONArray getRequestOutputs = offer.getRequestOutputs();
 		        	BigInteger sum1 = BigInteger.ZERO;
 		        	
-		        	for (int i = 0; i < getRequestOutputs.size(); i ++) {
+		        	for (int i = 0; i < getRequestOutputs.size(); i++) {
 		        		JSONObject obj = (JSONObject) getRequestOutputs.get(i);
 		        		BigInteger value = SharedCoin.getIntegerFromIntegerString(obj, "value");
 			        	Log.d("SharedCoin", "SharedCoin RequestOutput value " + obj.get("value"));		
@@ -1671,7 +1664,7 @@ public class SharedCoin {
 
 		        	BigInteger sum2 = BigInteger.ZERO;
 		        	JSONArray getOfferedOutpoints = offer.getOfferedOutpoints();
-		        	for (int i = 0; i < getOfferedOutpoints.size(); i ++) {
+		        	for (int i = 0; i < getOfferedOutpoints.size(); i++) {
 		        		JSONObject obj = (JSONObject) getOfferedOutpoints.get(i);
 		        		BigInteger value = SharedCoin.getIntegerFromIntegerString(obj, "value");
 			        	Log.d("SharedCoin", "SharedCoin OfferedOutpoint value " + obj.get("value"));		
@@ -1689,9 +1682,7 @@ public class SharedCoin {
 				objectSuccessCallback.onFail(e.getLocalizedMessage());
 			}
 		}
-		
-		
-		
+
 		private void _success(int ii, JSONArray outpoints_to_offer_next_stage, final ObjectSuccessCallback objectSuccessCallback) {
             ii++;
         	Log.d("SharedCoin", "SharedCoin Executing Stage_success ii " + ii);		
@@ -1715,6 +1706,7 @@ public class SharedCoin {
 		public void execStage(final int ii, final ObjectSuccessCallback objectSuccessCallback) {
             this.c_stage = ii;
             final Offer offerForThisStage = this.offers.get(ii);
+
         	Log.d("SharedCoin", "SharedCoin Executing Stage " + ii);		
         	this.executeOffer(offerForThisStage, new ObjectSuccessCallback() {
 
@@ -1919,8 +1911,7 @@ public class SharedCoin {
 			});
 		}
 	}
-	
-	
+
     private static JSONObject getOfferID(final long offerID) {
     	
 		Map<Object, Object> params = new HashMap<Object, Object>();
@@ -2058,9 +2049,7 @@ public class SharedCoin {
 		info = (JSONObject) new JSONParser().parse(response);
         Log.d("SharedCoin", "SharedCoin request get_info " + info.toString());
     }
-	
-	
-	
+
 	private static JSONObject getOfferIDDebugReturnObject() {
 		int returnChoice = 1;
 		JSONObject obj = new JSONObject();
@@ -2098,8 +2087,6 @@ public class SharedCoin {
     	p.put("signature_requests", signature_requests);
 		return p;
 	}
-	
-	
 
 	private static JSONObject pollForProposalCompletedDebugReturnObject() {
 		int returnChoice = 3;
