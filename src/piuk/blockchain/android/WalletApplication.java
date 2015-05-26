@@ -31,6 +31,7 @@ import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Build;
 import android.preference.PreferenceManager;
 //import android.util.Log;
 import android.util.Pair;
@@ -60,7 +61,6 @@ import piuk.blockchain.android.ui.PinEntryActivity;
 import piuk.blockchain.android.SuccessCallback;
 //import piuk.blockchain.android.ui.dialogs.RekeyWalletDialog;
 //import piuk.blockchain.android.util.ErrorReporter;
-import piuk.blockchain.android.util.RandomOrgGenerator;
 import piuk.blockchain.android.util.WalletUtils;
 import info.blockchain.wallet.ui.ObjectSuccessCallback;
 import info.blockchain.wallet.ui.WalletUtil;
@@ -85,11 +85,13 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.UUID;
+import java.nio.ByteBuffer;
 
 @SuppressLint("SimpleDateFormat")
 public class WalletApplication extends Application {
 	private MyRemoteWallet blockchainWallet;
-	private SharedCoin sharedCoin;
+//	private SharedCoin sharedCoin;
 
 	private final Handler handler = new Handler();
 	private Timer timer;
@@ -622,7 +624,7 @@ public class WalletApplication extends Application {
 	public MyRemoteWallet getRemoteWallet() {
 		return blockchainWallet;
 	}
-
+/*
 	public SharedCoin getSharedCoin() {
 		return sharedCoin;
 	}
@@ -630,7 +632,7 @@ public class WalletApplication extends Application {
 	public void setSharedCoin(SharedCoin sharedCoin) {
 		this.sharedCoin = sharedCoin;
 	}
-	
+*/	
 	public String getGUID() {
 		return PreferenceManager.getDefaultSharedPreferences(this).getString("guid", null);
 	}
@@ -840,6 +842,7 @@ public class WalletApplication extends Application {
 	}
 
 	public void seedFromRandomOrg() {
+		/*
 		new Thread(new Runnable() {
 			public void run() {
 				try {
@@ -849,6 +852,30 @@ public class WalletApplication extends Application {
 				}
 			}
 		}).start();
+		*/
+
+		SecureRandom random = new SecureRandom();
+		if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
+			int id = android.os.Process.myPid();
+			long ts = System.currentTimeMillis();
+			long val1 = id * ts;
+			UUID uuid1 = UUID.randomUUID();
+			long val2 = uuid1.getMostSignificantBits();
+			UUID uuid2 = UUID.randomUUID();
+			long val3 = uuid2.getLeastSignificantBits();
+			
+			byte[] bytes = new byte[16];
+			byte[] one = ByteBuffer.allocate(8).putLong(val1 ^ val2).array();
+			byte[] two = ByteBuffer.allocate(8).putLong(val1 ^ val3).array();
+
+			System.arraycopy(one, 0, bytes, 0, one.length);
+			System.arraycopy(two, 0, bytes, one.length, two.length);
+			random.setSeed(bytes);
+		}
+		byte[] seed = new byte[32];
+		random.nextBytes(seed);
+		MyWallet.extra_seed = seed;
+
 	}
 
 	public synchronized void checkIfWalletHasUpdated(final String password, final String guid, final String sharedKey, final boolean fetchTransactions, final SuccessCallback callbackFinal) {
@@ -1726,7 +1753,7 @@ public class WalletApplication extends Application {
 			return "unknown";
 		}
 	}
- 
+/* 
 	public void sharedCoinRecoverSeeds(List<String> shared_coin_seeds) {
 		sharedCoin.recoverSeeds(shared_coin_seeds, new SuccessCallback() {
 			@Override
@@ -1839,4 +1866,5 @@ public class WalletApplication extends Application {
 			}
 		}).start();
 	}
+*/
 }
