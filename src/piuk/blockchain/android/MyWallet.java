@@ -52,8 +52,6 @@ import org.spongycastle.crypto.paddings.PaddedBufferedBlockCipher;
 import org.spongycastle.crypto.params.KeyParameter;
 import org.spongycastle.crypto.params.ParametersWithIV;
 
-import piuk.blockchain.android.util.LinuxSecureRandom;
-
 public class MyWallet {
 	private static final int AESBlockSize = 4;
 	public static final int DefaultPBKDF2Iterations = 5000;
@@ -87,10 +85,6 @@ public class MyWallet {
 			throw new Exception("Error Decrypting Wallet");
 
 		temporyPassword = password;
-	}
-
-	static {
-		LinuxSecureRandom.init();
 	}
 
 	public ECKey generateECKey() {

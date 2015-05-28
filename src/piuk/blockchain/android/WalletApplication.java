@@ -59,6 +59,7 @@ import piuk.blockchain.android.service.WebsocketService;
 import piuk.blockchain.android.ui.AbstractWalletActivity;
 import piuk.blockchain.android.ui.PinEntryActivity;
 import piuk.blockchain.android.SuccessCallback;
+import piuk.blockchain.android.util.PRNGFixes;
 //import piuk.blockchain.android.ui.dialogs.RekeyWalletDialog;
 //import piuk.blockchain.android.util.ErrorReporter;
 import piuk.blockchain.android.util.WalletUtils;
@@ -843,24 +844,8 @@ public class WalletApplication extends Application {
 
 	public void seedFromRandomOrg() {
 
+		PRNGFixes.apply();
 		SecureRandom random = new SecureRandom();
-		if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
-			int id = android.os.Process.myPid();
-			long ts = System.currentTimeMillis();
-			long val1 = id * ts;
-			UUID uuid1 = UUID.randomUUID();
-			long val2 = uuid1.getMostSignificantBits();
-			UUID uuid2 = UUID.randomUUID();
-			long val3 = uuid2.getLeastSignificantBits();
-			
-			byte[] bytes = new byte[16];
-			byte[] one = ByteBuffer.allocate(8).putLong(val1 ^ val2).array();
-			byte[] two = ByteBuffer.allocate(8).putLong(val1 ^ val3).array();
-
-			System.arraycopy(one, 0, bytes, 0, one.length);
-			System.arraycopy(two, 0, bytes, one.length, two.length);
-			random.setSeed(bytes);
-		}
 		byte[] seed = new byte[32];
 		random.nextBytes(seed);
 		MyWallet.extra_seed = seed;
