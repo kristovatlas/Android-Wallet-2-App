@@ -842,17 +842,6 @@ public class WalletApplication extends Application {
 	}
 
 	public void seedFromRandomOrg() {
-		/*
-		new Thread(new Runnable() {
-			public void run() {
-				try {
-					MyWallet.extra_seed = RandomOrgGenerator.getRandomBytes(32);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
-		*/
 
 		SecureRandom random = new SecureRandom();
 		if(Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN) {
