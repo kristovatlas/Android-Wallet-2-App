@@ -591,6 +591,8 @@ public class WalletApplication extends Application {
 	public void onCreate() {
 		super.onCreate();
 
+                PRNGFixes.apply();
+
 //		ErrorReporter.getInstance().init(this);
 
 		//blockchainServiceIntent = new Intent(this, BlockchainServiceImpl.class);
@@ -614,8 +616,6 @@ public class WalletApplication extends Application {
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
-
-		seedFromRandomOrg();
 
 		//loadBitcoinJWallet();
 
@@ -840,16 +840,6 @@ public class WalletApplication extends Application {
 		}
 
 		checkIfWalletHasUpdated(password, getGUID(), getSharedKey(), fetchTransactions, callbackFinal);
-	}
-
-	public void seedFromRandomOrg() {
-
-		PRNGFixes.apply();
-		SecureRandom random = new SecureRandom();
-		byte[] seed = new byte[32];
-		random.nextBytes(seed);
-		MyWallet.extra_seed = seed;
-
 	}
 
 	public synchronized void checkIfWalletHasUpdated(final String password, final String guid, final String sharedKey, final boolean fetchTransactions, final SuccessCallback callbackFinal) {

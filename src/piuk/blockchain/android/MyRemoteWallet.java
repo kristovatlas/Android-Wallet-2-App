@@ -97,7 +97,6 @@ public class MyRemoteWallet extends MyWallet {
 
 	private double sharedFee;
 	private List<MyTransaction> transactions = Collections.synchronizedList(new ArrayList<MyTransaction>());
-	public byte[] extra_seed;
 
 	public static enum FeePolicy {
 		FeeOnlyIfNeeded,
@@ -625,10 +624,6 @@ public class MyRemoteWallet extends MyWallet {
 
 	private Pair<ECKey, String> generateNewMiniPrivateKey() {
 		SecureRandom random = new SecureRandom();
-
-		if (extra_seed != null) {
-			random.setSeed(extra_seed);
-		}
 
 		while (true) {
 //			Log.d("generateNewMiniPrivateKey", "generateNewMiniPrivateKey");

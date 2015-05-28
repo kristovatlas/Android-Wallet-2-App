@@ -65,7 +65,6 @@ public class MyWallet {
 	public static final double SupportedEncryptionVersion = 2.0;
 
 	private static final NetworkParameters params = MainNetParams.get();
-	public static byte[] extra_seed;
 
 	@SuppressWarnings("unchecked")
 	public MyWallet(String base64Payload, String password) throws Exception {
@@ -89,10 +88,6 @@ public class MyWallet {
 
 	public ECKey generateECKey() {
 		SecureRandom random = new SecureRandom();
-
-		if (extra_seed != null) {
-			random.setSeed(extra_seed);
-		}
 
 		return new ECKey(random);
 	}
