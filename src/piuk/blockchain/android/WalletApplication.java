@@ -224,14 +224,14 @@ public class WalletApplication extends Application {
 	}
 
 	public Integer getLatestHeightFromBlockExplorer() throws Exception {
-		return Integer.valueOf(WalletUtils.getURL("http://blockexplorer.com/q/getblockcount"));
+		return Integer.valueOf(WalletUtils.getURL("https://blockexplorer.com/q/getblockcount"));
 	}
 	/*
 	public Pair<Block, Integer> getLatestBlockHeaderFromBlockExplorer(Integer blockHeight) throws Exception {
 
-		String hash = WalletUtils.getURL("http://blockexplorer.com/q/getblockhash/"+blockHeight);
+		String hash = WalletUtils.getURL("https://blockexplorer.com/q/getblockhash/"+blockHeight);
 
-		JSONObject obj = (JSONObject) new JSONParser().parse(WalletUtils.getURL("http://blockexplorer.com/rawblock/"+hash));
+		JSONObject obj = (JSONObject) new JSONParser().parse(WalletUtils.getURL("https://blockexplorer.com/rawblock/"+hash));
 
 		Block block = new Block(Constants.NETWORK_PARAMETERS);
 
@@ -259,7 +259,7 @@ public class WalletApplication extends Application {
 		for (ECKey key : bitcoinjWallet.getKeys()) {
 			try {
 
-				String url = "http://blockexplorer.com/q/addressfirstseen/" + key.toAddress(Constants.NETWORK_PARAMETERS).toString();
+				String url = "https://blockexplorer.com/q/addressfirstseen/" + key.toAddress(Constants.NETWORK_PARAMETERS).toString();
 
 				String response = WalletUtils.getURL(url);
 

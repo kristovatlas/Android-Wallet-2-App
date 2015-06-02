@@ -47,8 +47,8 @@ public class ExchangeRateUtil {
 		
         try {
         	if(System.currentTimeMillis() - ts > (15 * 60 * 1000)) {
-//                get("USD", IOUtils.toString(new URL("http://blockchain.info/ticker"), "UTF-8"));
-                get("USD", WalletUtils.getURL("http://blockchain.info/ticker"));
+//                get("USD", IOUtils.toString(new URL("https://blockchain.info/ticker"), "UTF-8"));
+                get("USD", WalletUtils.getURL("https://blockchain.info/ticker"));
         	}
         }
         catch(MalformedURLException mue) {

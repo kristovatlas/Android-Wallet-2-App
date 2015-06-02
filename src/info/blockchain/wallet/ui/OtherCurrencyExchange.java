@@ -109,7 +109,7 @@ public class OtherCurrencyExchange	{
 			@Override
 			public void run() {
 				try {							
-					final String response = WalletUtils.getURL("http://themoneyconverter.com/rss-feed/USD/rss.xml");
+					final String response = WalletUtils.getURL("https://themoneyconverter.com/rss-feed/USD/rss.xml");
 
 					handler.post(new Runnable() {
 						@Override

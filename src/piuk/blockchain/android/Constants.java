@@ -127,18 +127,18 @@ public class Constants {
 			public static final String CURRENCY_MINUS_SIGN = "-" + THIN_SPACE;
 			public static final int ADDRESS_FORMAT_LINE_SIZE = 12;
 
-			public static final String DISCLAIMER = "http://"+Constants.BLOCKCHAIN_DOMAIN+"/disclaimer";
-			public static final String PRIVACY_POLICY = "http://"+Constants.BLOCKCHAIN_DOMAIN+"/privacy";
+			public static final String DISCLAIMER = "https://"+Constants.BLOCKCHAIN_DOMAIN+"/disclaimer";
+			public static final String PRIVACY_POLICY = "https://"+Constants.BLOCKCHAIN_DOMAIN+"/privacy";
 
-			public static final String LICENSE_URL = "http://www.gnu.org/licenses/gpl-3.0.txt";
+			public static final String LICENSE_URL = "https://www.gnu.org/licenses/gpl-3.0.txt";
 			public static final String SOURCE_URL = "https://github.com/blockchain/My-Wallet-Android/";
-			public static final String CREDITS_BITCOINJ_URL = "http://code.google.com/p/bitcoinj/";
-			public static final String CREDITS_ZXING_URL = "http://code.google.com/p/zxing/";
-			public static final String CREDITS_BITCON_WALLET_ANDROID = "http://code.google.com/p/bitcoin-wallet/";
-			public static final String AUTHOR_TWITTER_URL = "http://twitter.com/android_bitcoin";
+			public static final String CREDITS_BITCOINJ_URL = "https://code.google.com/p/bitcoinj/";
+			public static final String CREDITS_ZXING_URL = "https://code.google.com/p/zxing/";
+			public static final String CREDITS_BITCON_WALLET_ANDROID = "https://code.google.com/p/bitcoin-wallet/";
+			public static final String AUTHOR_TWITTER_URL = "https://twitter.com/android_bitcoin";
 			public static final String AUTHOR_GOOGLEPLUS_URL = "https://profiles.google.com/andreas.schildbach";
 			public static final String MARKET_APP_URL = "market://details?id=%s";
-			public static final String WEBMARKET_APP_URL = isAmazon ? "http://www.amazon.com/gp/mas/dl/android?p=%s"
+			public static final String WEBMARKET_APP_URL = isAmazon ? "https://www.amazon.com/gp/mas/dl/android?p=%s"
 					: "https://play.google.com/store/apps/details?id=%s";
 
 			public static final Intent INTENT_QR_SCANNER = new Intent(

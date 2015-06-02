@@ -302,7 +302,7 @@ public class MapActivity extends Activity implements LocationListener	{
                 // Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("google.navigation:q=New+York+NY));
                 // startActivity(i);
                 //
-				String url = "http://maps.google.com/?saddr=" +
+				String url = "https://maps.google.com/?saddr=" +
 	 	     	    	currLocation.getLatitude() + "," + currLocation.getLongitude() +
 	 	     	     	"&daddr=" + markerValues.get(marker.getId()).lat + "," + markerValues.get(marker.getId()).lon;
                 tvAddress.setText(Html.fromHtml("<a href=\"" + url + "\">" + b.address + ", " + b.city + " " + b.pcode + "</a>"));
