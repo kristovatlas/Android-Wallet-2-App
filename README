@@ -5,3 +5,7 @@ Android-Wallet-2-App can now be compiled directly in Eclipse or via Ant.
 Link to Google Play Services as a Library Project when using Eclipse. See http://developer.android.com/google/play-services/setup.html
 
 Include your own Google developer key based on your debug certificate if you need to test maps.
+
+Security issues can be reported to us in the following venues:
+* Email: security@blockchain.info
+* Bug Bounty: https://www.crowdcurity.com/blockchain-info
